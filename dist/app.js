@@ -15,26 +15,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const dbClient_1 = require("./dbClient");
-const passwordHash = require('password-hash');
+const password_hash_1 = __importDefault(require("password-hash"));
+/// TODO convert to impoty
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 const app = express_1.default();
 app.use(body_parser_1.default.json());
 app.use((req, res, next) => {
     console.log('Middlewaregegege');
     next();
 });
+// initialize cookie-parser to allow us access the cookies stored in the browser.
+app.use(cookieParser());
+// initialize express-session to allow us track the logged-in user across sessions.
+app.use(session({
+    key: 'session_key_value_qqq',
+    secret: 'sssssh! That\'s the secret',
+    name: 'sessionqqq',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        path: '/',
+        qqq: "gegege",
+        maxAge: 60 * 60 * 1000,
+        expires: new Date(Date.now() + (3 * 60 * 60 * 1000))
+    }
+}));
+// middleware function to check for logged-in users
+app.use((req, res, next) => {
+    console.log(req.cookies);
+    next();
+});
 app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const username = req.body.username;
     const passwordRaw = req.body.password;
-    // * dont save real passwords. Use hash or some library (passport?)
-    const password = passwordHash.generate(passwordRaw);
-    ///console.log(encodedPassword);
-    ///console.log(passwordHash.verify(password, encodedPassword));
-    ///console.log(passwordHash.verify("1234", encodedPassword));
-    ///console.log(passwordHash.verify('1234', encodedPassword));
-    ///console.log(passwordHash.verify('huj', encodedPassword));
-    ///const success = await saveUser({username, password});
+    const password = password_hash_1.default.generate(passwordRaw);
     const newUser = { username, password };
-    ///???!const newUser: User = new User (username, password);
     const success = yield dbClient_1.saveUser(newUser);
     if (success) {
         res.send('User saved');
@@ -42,32 +58,19 @@ app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 }));
 app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const usersRaw = yield dbClient_1.getUsers();
-    ///const usersJSONString = JSON.stringify(usersRaw);
     const loggingUserName = req.body.username;
     const loggingUserPassword = req.body.password;
-    console.log("/login_" + "username: " + loggingUserName + "; userPassword: " + loggingUserPassword);
     const usersArray = Object.values(usersRaw);
-    console.log("/login_" + usersArray);
-    /*usersArray.forEach((loopingObject) => {
-        const loopingUser = loopingObject as User
-
-        console.log("/login_looping element next generation is: " + loopingUser.username);
-
-        if (loopingUser.username === loggingUserName) {
-            if (loopingUser.password === loggingUserPassword) {
-                res.send('Welcome to Prime-Time, Bitch.');
-
-                return
-            }
-        }
-    });
-
-    res.send('Netu takih.');*/
     for (let loopingObject of usersArray) {
         const loopingUser = loopingObject;
         console.log("/login_looping element last generation is: " + loopingUser.username);
         if (loopingUser.username === loggingUserName) {
-            if (passwordHash.verify(loggingUserPassword, loopingUser.password)) {
+            if (password_hash_1.default.verify(loggingUserPassword, loopingUser.password)) {
+                ///res.send(req.session);
+                res.cookie('nameqqq', "lastnameqqq");
+                console.log("req: " + req.cookies.toString());
+                console.log(req.cookies);
+                console.log("res: " + res.cookie.toString());
                 res.send('Welcome to Prime-Time, Bitch.');
                 return;
             }
@@ -77,24 +80,6 @@ app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 app.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const usersRaw = yield dbClient_1.getUsers();
-    //return only names
-    const usersArray = Object.values(usersRaw);
-    let usersFormatted = '';
-    /*for (let loopingObject of usersArray) {
-        const loopingUser = loopingObject as User
-
-        usersFormatted += loopingUser.username + "___"
-    }
-
-    res.send(usersFormatted);
-})*/
-    /*for (let loopingObject of usersArray) {
-        const loopingJSONObj = JSON.parse(JSON.stringify(loopingObject))
-
-        delete loopingJSONObj['password']
-
-        console.log(loopingJSONObj)
-    }*/
     const usersJSONObj = JSON.parse(JSON.stringify(usersRaw));
     console.log(usersJSONObj);
     for (let key in usersJSONObj) {
