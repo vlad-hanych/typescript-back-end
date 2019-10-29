@@ -1,1 +1,39 @@
-{"test1":"super test","user":{"uuu":{"username":"uuu","password":"1234"},"bbbbbb":{"username":"bbbbbb","password":"1234"},"vasya":{"username":"vasya","password":"1234"},"horoshizvistky":{"username":"horoshizvistky","password":"sha1$6007e6a0$1$4c1f60dc3f8f01cbabb8148b1b27344529f455a3"}}}
+{
+  "test1": "super test",
+  "user": {
+    "uuu": {
+      "username": "uuu",
+      "password": "1234"
+    },
+    "bbbbbb": {
+      "username": "bbbbbb",
+      "password": "1234"
+    },
+    "vasya": {
+      "username": "vasya",
+      "password": "1234"
+    },
+    "horoshizvistky": {
+      "username": "horoshizvistky",
+      "password": "sha1$6007e6a0$1$4c1f60dc3f8f01cbabb8148b1b27344529f455a3"
+    },
+    "qqq": {
+      "username": "qqq",
+      "password": "sha1$118fdac1$1$b9ab40ab62037ee4fe8900453825f3ad37f3ad4d"
+    }
+  },
+  "target": {
+    "qqq": {
+      "watch?v=NaupRojHLXI": {
+        "youtubeLink": "https://www.youtube.com/watch?v=NaupRojHLXI",
+        "viewsNeeded": 999,
+        "awardLink": "https://d2hhj3gz5jljkm.cloudfront.net/wallpapers/334/532/290/original/o_kim_kardashian_fatshaming.jpg"
+      },
+      "watch?v=ytQVGM_djuQ": {
+        "youtubeLink": "https://www.youtube.com/watch?v=ytQVGM_djuQ",
+        "viewsNeeded": 555,
+        "awardLink": "http://m.sportwiki.to/images/thumb/6/64/Denchik2.jpg/250px-Denchik2.jpg"
+      }
+    }
+  }
+}

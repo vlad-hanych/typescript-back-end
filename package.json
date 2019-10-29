@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/cookie-parser": "^1.4.2",
+    "@types/express-session": "^1.15.15",
     "@types/password-hash": "^1.2.20",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",

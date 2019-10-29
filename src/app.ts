@@ -1,46 +1,64 @@
-import express from "express";
+import express, {Request, Response, NextFunction} from "express";
 import bodyParser from "body-parser";
-import {saveUser, getUsers} from './dbClient';
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import {saveUser, getUsers, createTarget, getTargets, deleteTarget, editTarget} from "./dbClient";
 import User from "./User";
+import passwordHash from "password-hash";
+import Target from "./Target";
 
-import passwordHash from 'password-hash';
+const loginForm = `
+<!DOCTYPE html>
+<html>
+<body>
 
-/// TODO convert to impoty
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
+<h2>HTML Forms</h2>
+
+<form action="/login" method="post">
+  <div>
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="user_name">
+  </div>
+  <div>
+    <label for="msg">Password:</label>
+    <input id="msg" name="user_password" type="password"></input>
+  </div>
+  <div class="button">
+  <button type="submit">Send your message</button>
+</div>
+</form>
+</body>
+</html>
+`;
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use((req, res, next) => {
-    console.log('Middlewaregegege');
-    next();
-});
+const sessionChecker = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session.user || !req.cookies.user_sid) {
+        res.redirect('/login');
+    } else {
+        next();
+    }
+};
+
+let loggedUserName: string;
+
+app.use(bodyParser());
 
 // initialize cookie-parser to allow us access the cookies stored in the browser.
 app.use(cookieParser());
 
 // initialize express-session to allow us track the logged-in user across sessions.
 app.use(session({
-    key: 'session_key_value_qqq',
-    secret: 'sssssh! That\'s the secret',
-    name: 'sessionqqq',
+    name: 'user_sid',
+    secret: 'somerandonstuffs',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-        path: '/',
-        qqq: "gegege",
-        maxAge: 60 * 60 * 1000,
-        expires: new Date(Date.now() + (3 * 60 * 60 * 1000))
+        maxAge: 600000,
     }
 }));
 
-// middleware function to check for logged-in users
-app.use((req, res, next) => {
-    console.log(req.cookies);
-
-    next();
-});
 
 app.post('/signup', async (req, res) => {
     const username: string = req.body.username;
@@ -57,57 +75,112 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res) => {
-    const usersRaw = await getUsers();
+app.route('/login')
+    .get((req, res) => {
+        res.send(loginForm);
+    })
+    .post(async (req, res) => {
+        const usersRaw = await getUsers();
 
-    const loggingUserName = req.body.username;
-    const loggingUserPassword = req.body.password;
+        const loggingUserName = req.body.user_name;
+        const loggingUserPassword = req.body.user_password;
 
-    const usersArray = Object.values(usersRaw);
+        Object.values(usersRaw).forEach(loopingUser => {
+            if (loopingUser.username === loggingUserName) {
 
-    for (let loopingObject of usersArray) {
-        const loopingUser = loopingObject as User;
+                if (passwordHash.verify(loggingUserPassword, loopingUser.password)) {
+                    req.session.user = {name: 'Vasia', surname: 'Palapkin'};
+                    req.session.kot = 'kit';
 
-        console.log("/login_looping element last generation is: " + loopingUser.username);
+                    res.redirect('/dashboard');
 
-        if (loopingUser.username === loggingUserName) {
+                    loggedUserName = loggingUserName;
 
-            if (passwordHash.verify(loggingUserPassword, loopingUser.password)) {
-                ///res.send(req.session);
-
-                res.cookie('nameqqq', "lastnameqqq");
-                console.log("req: " + req.cookies.toString());
-                console.log(req.cookies);
-
-                console.log("res: " + res.cookie.toString());
-
-                res.send('Welcome to Prime-Time, Bitch.');
-
-                return
+                    return /// TODO 28.10.2019 return seems doesn't work here.
+                }
             }
-        }
+        });
+
+        res.send('Netu takih.');
+    });
+
+// route for user logout
+app.get('/logout', (req, res) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.clearCookie('user_sid');
+        res.redirect('/');
+
+        loggedUserName = null
+    } else {
+        res.redirect('/login');
     }
-
-    res.send('Netu takih.');
-
 });
+
+app.use(sessionChecker);
 
 app.get('/users', async (req, res) => {
     const usersRaw = await getUsers();
 
-    const usersJSONObj = JSON.parse(JSON.stringify(usersRaw));
+    res.send(Object.values(usersRaw).forEach(loopingUser => delete loopingUser.password));
+});
 
-    console.log(usersJSONObj);
+app.get('/dashboard', (req, res) => {
+    console.log(req.session.kot);
 
-    for (let key in usersJSONObj) {
-        const loopingJSONObj = usersJSONObj[key];
+    res.send('Reached dashboard');
+});
 
-        delete loopingJSONObj['password'];
-    }
+app.post('/createTarget', async (req, res) => {
+    console.log(req.session.kot);
 
-    console.log(usersJSONObj);
+    const youtubeLink: string = req.body.youtubeLink;
+    const viewsNeeded: number = req.body.viewsNeeded;
+    const awardLink: string = req.body.awardLink;
 
-    res.send(usersJSONObj);
+    const creatingTarg: Target = {youtubeLink, viewsNeeded, awardLink};
+
+    const success = await createTarget(loggedUserName, creatingTarg);
+
+    res.send('Target created!');
+});
+
+app.get('/getTargets', async (req, res) => {
+    console.log(req.session.kot);
+
+    const targetData = await getTargets(loggedUserName);
+
+    res.send(targetData);
+});
+
+app.patch('/editTarget', async (req, res) => {
+    console.log(req.session.kot);
+
+    const targetName: string = req.body.targetName;
+
+    const youtubeLink: string = req.body.youtubeLink;
+
+    const viewsNeeded: number = req.body.viewsNeeded;
+
+    const awardLink: string = req.body.awardLink;
+
+    const target = await editTarget
+    (loggedUserName,
+        targetName,
+        youtubeLink,
+        viewsNeeded,
+        awardLink);
+
+    res.send(target);
+});
+
+app.get('/deleteTarget', async (req, res) => {
+    console.log(req.session.kot);
+
+    const targetName: string = req.body.targetName;
+
+    const target = await deleteTarget(loggedUserName, targetName);
+
+    res.send(target);
 });
 
 export default app;
