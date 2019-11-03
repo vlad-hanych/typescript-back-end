@@ -18,7 +18,7 @@ exports.saveUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
             setTimeout(() => {
                 db.push(`/user/${user.username}`, user);
                 res(true);
-            }, 3000);
+            }, 1);
         });
         return promise;
     }
@@ -32,7 +32,7 @@ exports.getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
             setTimeout(() => {
                 const data = db.getData('/user');
                 res(data);
-            }, 3000);
+            }, 1);
         });
         return promise;
     }

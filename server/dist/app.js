@@ -51,7 +51,7 @@ const sessionChecker = (req, res, next) => {
     }
 };
 let loggedUserName;
-app.use(body_parser_1.default());
+app.use(body_parser_1.default.json());
 // initialize cookie-parser to allow us access the cookies stored in the browser.
 app.use(cookie_parser_1.default());
 // initialize express-session to allow us track the logged-in user across sessions.
@@ -71,7 +71,7 @@ app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const newUser = { username, password };
     const success = yield dbClient_1.saveUser(newUser);
     if (success) {
-        res.send('User saved');
+        res.status(200);
     }
 }));
 app.route('/login')
@@ -80,20 +80,20 @@ app.route('/login')
 })
     .post((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const usersRaw = yield dbClient_1.getUsers();
-    const loggingUserName = req.body.user_name;
-    const loggingUserPassword = req.body.user_password;
+    const loggingUserName = req.body.username;
+    const loggingUserPassword = req.body.password;
     Object.values(usersRaw).forEach(loopingUser => {
         if (loopingUser.username === loggingUserName) {
             if (password_hash_1.default.verify(loggingUserPassword, loopingUser.password)) {
                 req.session.user = { name: 'Vasia', surname: 'Palapkin' };
                 req.session.kot = 'kit';
-                res.redirect('/dashboard');
+                res.status(200);
                 loggedUserName = loggingUserName;
                 return; /// TODO 28.10.2019 return seems doesn't work here.
             }
         }
     });
-    res.send('Netu takih.');
+    res.status(404);
 }));
 // route for user logout
 app.get('/logout', (req, res) => {

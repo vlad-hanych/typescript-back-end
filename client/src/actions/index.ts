@@ -1,7 +1,24 @@
 
+
+
+export enum ActionTypes {
+    LoginRequested = "LoginRequested",
+    LoginSucceded = "LoginSucceded",
+    RegisterUser = "RegisterUser",
+}
+
+
+export function register(email: string, password: string) {
+    return {
+        type: <const>ActionTypes.RegisterUser,
+        email,
+        password
+    }
+}
+
 export function login(email: string, password: string) {
     return {
-        type: <const>'LOGIN_REQUESTED',
+        type: <const>ActionTypes.LoginRequested,
         email,
         password
     }
@@ -9,7 +26,7 @@ export function login(email: string, password: string) {
 
 export function loginSuccess() {
     return {
-        type: <const>'LOGIN_SUCCEEDED',
+        type: <const>ActionTypes.LoginSucceded,
     }
 }
 

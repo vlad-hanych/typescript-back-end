@@ -1,17 +1,29 @@
 import { put, takeLatest, all } from 'redux-saga/effects';
-import {Actions, loginSuccess, login} from '../actions';
-
+import {loginSuccess, login, register, ActionTypes} from '../actions';
 
 function* loginSaga(action: ReturnType<typeof login>) {
-    const json = yield fetch('localhost:3000/login', {method: 'POST'})
+    const payload = {username: action.email, password: action.password}
+    const json = yield fetch('/login', {method: 'POST',  headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },body: JSON.stringify(payload)})
         .then(response => response.json());
-    yield put<Actions>(loginSuccess());
+    yield put(loginSuccess());
 }
-function* actionWatcher() {
-    yield takeLatest('LOGIN_REQUESTED', loginSaga)
+
+function* registerSaga(action: ReturnType<typeof register>){
+    const payload = {username: action.email, password: action.password}
+    const json = yield fetch('/signup', {method: 'POST',  headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },body: JSON.stringify(payload)})
+        .then(response => response.json());
+    yield put(loginSuccess());
 }
+
 export default function* rootSaga() {
     yield all([
-        actionWatcher(),
+        yield takeLatest(ActionTypes.LoginRequested, loginSaga),
+        yield takeLatest(ActionTypes.RegisterUser, registerSaga)
     ]);
 }

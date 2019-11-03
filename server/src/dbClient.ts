@@ -11,7 +11,7 @@ export const saveUser = async (user: User): Promise<boolean> => {
             setTimeout(() => {
                 db.push(`/user/${user.username}`, user);
                 res(true);
-            }, 3000);
+            }, 1);
         });
         return promise;
     } catch (err) {
@@ -25,7 +25,7 @@ export const getUsers = async (): Promise<Record<string, User>> => {
             setTimeout(() => {
                 const data = db.getData('/user');
                 res(data);
-            }, 3000);
+            }, 1);
         });
         return promise;
 

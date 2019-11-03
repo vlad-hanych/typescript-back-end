@@ -43,7 +43,7 @@ const sessionChecker = (req: Request, res: Response, next: NextFunction) => {
 
 let loggedUserName: string;
 
-app.use(bodyParser());
+app.use(bodyParser.json());
 
 // initialize cookie-parser to allow us access the cookies stored in the browser.
 app.use(cookieParser());
@@ -71,7 +71,7 @@ app.post('/signup', async (req, res) => {
     const success = await saveUser(newUser);
 
     if (success) {
-        res.send('User saved');
+        res.status(200);
     }
 });
 
@@ -82,8 +82,8 @@ app.route('/login')
     .post(async (req, res) => {
         const usersRaw = await getUsers();
 
-        const loggingUserName = req.body.user_name;
-        const loggingUserPassword = req.body.user_password;
+        const loggingUserName = req.body.username;
+        const loggingUserPassword = req.body.password;
 
         Object.values(usersRaw).forEach(loopingUser => {
             if (loopingUser.username === loggingUserName) {
@@ -92,7 +92,7 @@ app.route('/login')
                     req.session.user = {name: 'Vasia', surname: 'Palapkin'};
                     req.session.kot = 'kit';
 
-                    res.redirect('/dashboard');
+                    res.status(200);
 
                     loggedUserName = loggingUserName;
 
@@ -101,7 +101,7 @@ app.route('/login')
             }
         });
 
-        res.send('Netu takih.');
+        res.status(404);
     });
 
 // route for user logout
